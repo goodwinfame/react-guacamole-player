@@ -1,0 +1,23 @@
+{
+  "id": "1562660",
+  "name": "guacamole-player",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "1718568",
+      "name": "pause",
+      "font_class": "pause",
+      "unicode": "e6da",
+      "unicode_decimal": 59098
+    },
+    {
+      "icon_id": "1857397",
+      "name": "play",
+      "font_class": "play",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    }
+  ]
+}
