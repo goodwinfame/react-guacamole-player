@@ -30,11 +30,13 @@ export function formatTime(value: number) {
 
 export const delay = (ms: number = 0) => new Promise(resolve=>window.setTimeout(resolve, ms));
 
-
-export function debounce(delay: number = 500) {
+interface debounceFunction {
+    (callback: Function): void;
+    cancel(): void;
+}
+export function debounce(delay: number = 500): debounceFunction {
     let timer: any;
-    
-    return (callback: Function) => {
+    function call(callback: Function) {
         if(timer) {
             window.clearTimeout(timer);
         }
@@ -44,6 +46,11 @@ export function debounce(delay: number = 500) {
             timer = null;
         }, delay);
     }
+
+    call.cancel = () => {
+        timer = window.clearTimeout(timer);
+    }
+    return call;
 }
 
 
@@ -54,4 +61,46 @@ export function listener(event: any, callback: (e: any)=>void) {
             window.removeEventListener(event, callback);
         }
     }
+}
+
+export interface CancelablePromise<T = any> extends Promise<T> {
+    cancel: Function
+}
+export function cancelablePromise<T>(promise: Promise<any>): CancelablePromise<T> {
+
+    let cancelled = false;
+
+    const defered: {
+        promise: CancelablePromise | null; 
+        reject: Function | null; 
+        resolve: Function | null
+    } = {promise: null, resolve: null, reject: null};
+
+    defered.promise = new Promise((resolve, reject)=>{
+        defered.resolve = resolve;
+        defered.reject = reject;
+    }) as CancelablePromise
+
+    defered.promise.cancel = () => {
+        cancelled = true;
+    }
+
+    promise
+        .then((...args)=>{
+            if(!cancelled) {
+                defered.resolve!(...args);
+            } else {
+                defered.reject!("cancelled",...args)
+            }
+        })
+        .catch((...args)=>{
+            if(!cancelled) {
+                defered.resolve!(...args);
+            } else {
+                defered.reject!("cancelled",...args)
+            }
+        })
+
+    return defered.promise;
+
 }

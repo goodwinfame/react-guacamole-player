@@ -24,13 +24,13 @@ export default function get(url: string, rangeStart: number = 0, rangeEnd: numbe
         xhr.onreadystatechange = function(){
             if(xhr.readyState === 4){
                 if(xhr.status === 200 || xhr.status === 206){
-                    resolve({
+                    return resolve({
                         status: xhr.status,
                         file: xhr.response,
                         contentRange: xhr.getResponseHeader("Content-Range")
                     });
                 } else {
-                    reject(xhr);
+                    return reject(xhr);
                 }
             }
         }

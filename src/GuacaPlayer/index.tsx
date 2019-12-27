@@ -2,7 +2,7 @@
  * 播放器入口
 */
 
-import React, { useCallback, MouseEvent, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, MouseEvent, useEffect, useRef, useMemo, useState } from 'react';
 import './index.less';
 import Display from './display';
 import Control from './control';
@@ -10,15 +10,19 @@ import Progress from './progress';
 import useRecording from './hooks/useRecording';
 import useControl from './hooks/useControl';
 import useServiceWorker from './hooks/useServiceWorker';
-import { listener } from './utils';
 import { setHeader } from './utils/get';
+import useMessage from './hooks/useMessage';
+import Message from './message';
+import useTranlation, {translation} from './hooks/useTranslation';
 
 interface Props {
     src?: string;
     width?: number;
     height?: number;
     headers?: object;
+    autoPlay?: boolean
     getPlayer?: (player: Player) => void; // 跳转位置（时长ms）
+    translate?: (translation: translation) => translation;
 }
 
 interface Player {
@@ -30,13 +34,18 @@ interface Player {
     getCurrentDuration: () => Promise<number>;
 }
 
-const GuacaPlayer: React.FC<Props> = ({src, headers, width, height, getPlayer}) => {
+const GuacaPlayer: React.FC<Props> = ({src, headers, getPlayer, height, width, translate, autoPlay = true}) => {
+
+    //翻译
+    const translation = useTranlation(translate)
+
 
     useEffect(() => {
         headers && setHeader(headers);
     }, [headers])
 
-    const {recording} = useRecording(src);
+    const {recording, recordingState} = useRecording(src);
+
 
     const {
         progress, 
@@ -46,8 +55,12 @@ const GuacaPlayer: React.FC<Props> = ({src, headers, width, height, getPlayer}) 
         isPlaying, 
         seek,
         cancelSeek,
-    } = useControl(recording)
+        playerState
+    } = useControl(recording, autoPlay, recordingState)
 
+
+    //message
+    const {loading, visibility, text} = useMessage({initState: recordingState, translation})
 
     const player = useMemo(()=> {
         if(!recording) {
@@ -70,6 +83,8 @@ const GuacaPlayer: React.FC<Props> = ({src, headers, width, height, getPlayer}) 
     }, [player])
 
     
+
+    
     const togglePlayback = useCallback((e: MouseEvent)=>{
         e.stopPropagation();
         if (recording) {
@@ -86,7 +101,6 @@ const GuacaPlayer: React.FC<Props> = ({src, headers, width, height, getPlayer}) 
     }, [seek])
 
 
-
     let pause, play, display;
 
     if(recording) {
@@ -97,9 +111,10 @@ const GuacaPlayer: React.FC<Props> = ({src, headers, width, height, getPlayer}) 
 
     
     return (
-        <div className={"guaca-player"} style={{width, height}}>
-            <Progress progress={progress} onCancel={cancelSeek}/>
-            <Display display={display} onClick={togglePlayback}/>
+        <div className={"guaca-player"} style={{height, width}}>
+            <Message loading={loading} visibility={visibility} text={text}/>
+            <Progress progress={progress} onCancel={cancelSeek} translation={translation}/>
+            <Display display={display} onClick={togglePlayback} isPlaying={isPlaying} playerState={playerState} progress={progress} translation={translation}/>
             <Control 
                 currentDuration={currentDuration}
                 duration={duration}

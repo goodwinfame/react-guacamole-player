@@ -7,9 +7,11 @@
 
 
 import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
+import { translation } from './hooks/useTranslation';
 
 interface Props {
     onCancel?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+    translation: translation
     progress: {
         type: "load" | "seek";
         current: number;
@@ -19,7 +21,7 @@ interface Props {
     
 }
 
-const Progress: React.FC<Props> = ({progress: { type, current, total, visiable }, onCancel}) => {
+const Progress: React.FC<Props> = ({translation, progress: { type, current, total, visiable }, onCancel}) => {
     const deg = Math.ceil(current / total * 360) || 0;
     
     return (
@@ -34,13 +36,13 @@ const Progress: React.FC<Props> = ({progress: { type, current, total, visiable }
                     {Math.ceil((current / total * 100) || 0)}%
                 </div>
             </div>
-            <span>LOADING...</span>
+    <span>{translation["btn.loading"]}</span>
 
             {
                 type === "seek"
                 &&
                 <button onClick={onCancel}>
-                    CANCEL
+                    {translation["btn.cancel"]}
                 </button>
             }
             

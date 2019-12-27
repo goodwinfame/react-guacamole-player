@@ -27,7 +27,6 @@ export default class ManageDatabase {
     }
     connectionPool: Promise<IDBDatabase>[] = [];
     openInitDB = async () => {
-
         if(this.connectionPool[0]) {
             return this.connectionPool[0];
         }
@@ -36,6 +35,7 @@ export default class ManageDatabase {
 
         const connection = new Promise<IDBDatabase>((resolve, reject)=>{
             req.onupgradeneeded = (e: any) => {
+                console.log("db updated")
                 this.db = e.target.result as IDBDatabase;
                 if (!this.db.objectStoreNames.contains("sessions")) {
                     this.db.createObjectStore("sessions", {keyPath: ["url", "start", "end"]})
@@ -44,11 +44,11 @@ export default class ManageDatabase {
             req.onsuccess = (e: any) => {
                 this.connectionPool.pop();
                 this.db = e.target.result as IDBDatabase;
-                resolve(this.db);
+                return resolve(this.db);
             }
             req.onerror = (e: any) => {
                 this.connectionPool.pop();
-                reject(e);
+                return reject(e);
             }
             
         })
@@ -60,6 +60,7 @@ export default class ManageDatabase {
 
     }
     getDB = async () => {
+
         if(this.db) {
             return this.db;
         }
@@ -67,6 +68,7 @@ export default class ManageDatabase {
     }
     
     add = async (session: session) => {
+
         const DB = await this.getDB();
         return new Promise((resolve, reject) => {
             const req = DB.transaction(["sessions"], "readwrite")
@@ -74,15 +76,18 @@ export default class ManageDatabase {
                 .add({timestamp: new Date().getTime(), ...session});
             
             req.onsuccess = event => {
-                resolve(session.data);
+                console.log("db add", session, req)
+
+                return resolve(session.data);
             }
 
             req.onerror = event => {
-                reject(event)
+                return reject(event)
             }
         })
     }
     read = async (session: session) => {
+
         const DB = await this.getDB();
         return new Promise<Response>((resolve, reject) => {
             const req = DB.transaction(["sessions"])
@@ -90,16 +95,19 @@ export default class ManageDatabase {
                 .get([session.url, session.start, session.end]);
 
             req.onsuccess = (event: any) => {
-                resolve(req.result && req.result.data)
+                console.log("db read", session, req)
+
+                return resolve(req.result && req.result.data)
             }
 
             req.onerror = (event: any) => {
-                reject(event)
+                return reject(event)
             }
         })
             
     }
     resetDB = async () => {
+        console.log("db closed")
         const DB = await this.getDB();
         DB.close();
         this.IndxDb.deleteDatabase(this.dbName);

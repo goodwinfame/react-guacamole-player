@@ -101,9 +101,16 @@ export default class SessionRecording {
         this.playbackClient.connect();
         this.playbackClient.getDisplay().showCursor(false);
         this.fileCache = fileCache;
+    };
+    start = () => {
         //开始加载文件
         this.loadFile(this.fileCache.head);
-    };
+    }
+    stop = () => {
+        //结束
+        this.pause();
+        this.abort();
+    }
     getLastTimestamp = async () => {
         //获取视频最后一帧时间戳
         if(this.endVideoTimestamp || !this.fileCache.tail) {
@@ -114,9 +121,9 @@ export default class SessionRecording {
             const reader = new FileReader();
             reader.onload = () => {
                 if(typeof(reader.result) === "string") {
-                    resolve(reader.result);
+                    return resolve(reader.result);
                 } else {
-                    reject()
+                    return reject()
                 }
             }
             reader.readAsText(file);
@@ -138,7 +145,6 @@ export default class SessionRecording {
         let parser = new Guacamole.Parser();
 
         while(partial) {
-
             //trunk正在下载中
             this.onTrunkLoad && this.onTrunkLoad({
                 type: "loading", 
@@ -281,10 +287,10 @@ export default class SessionRecording {
                                 }
                             }
                             
-                            reject(parseError.message);
+                            return reject(parseError.message);
                         }
                     }
-                    resolve()
+                    return resolve()
                 }
                 reader.readAsText(block);
             })
@@ -385,11 +391,16 @@ export default class SessionRecording {
 
         // 更新当前帧
         this.currentFrame = index;
-
         return;
     }
 
     private seekToFrame = async (index: number, realTimestamp: number = 0): Promise<boolean> => {
+        /**
+         * index 目标帧
+         * startIndex 起始查找的帧
+         * currentFrame 当前帧
+        */
+        
         // 终止查询
         this.abortSeek();
 
@@ -428,10 +439,7 @@ export default class SessionRecording {
 
         // 从当前帧开始播放到目标帧
         do {
-            // 播放进度回调
-            if (this.onSeek && this.currentFrame > startIndex) {
-                this.onSeek(this.toRelativeTimestamp(current.timestamp),this.currentFrame - startIndex, index - startIndex);
-            }
+           
 
             // 取消播放
             if (thisSeek.aborted) {
@@ -442,11 +450,18 @@ export default class SessionRecording {
                 
 
             // 播放下一帧
-            if(!thisSeek.aborted && this.currentFrame < index) {
+            if(this.currentFrame < index) {
                 await this.replayFrame(this.currentFrame + 1);
+                const current = this.frames[this.currentFrame];
+
+                // 播放进度回调
+                if (this.onSeek) {
+                    this.onSeek(this.toRelativeTimestamp(current.timestamp),this.currentFrame - startIndex, index - startIndex);
+                }
             } else {
                 break;
             }
+            
                 
         } while (true)
 
@@ -531,7 +546,10 @@ export default class SessionRecording {
     play = () => {
 
         // 如果当前状态为暂停并且有可播放帧，则处理
-        if (!this.isPlaying() && this.currentFrame + 1 < this.frames.length) {
+        if (!this.isPlaying()) {
+            if(this.currentFrame + 1 >= this.frames.length) {
+                this.currentFrame = -1;
+            }
 
             // 播放回调
             if (this.onPlay)

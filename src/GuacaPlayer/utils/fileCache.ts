@@ -6,32 +6,52 @@
 
 import get, {Response} from './get';
 import ManageDatabase from './mgrDB';
+import { cancelablePromise, CancelablePromise } from '.';
 
 let taskId = 0;
+
+interface FetchingPromise extends CancelablePromise {
+    id: number
+}
 
 class Base {
     static readonly MAX_FILE_SIZE = 5242880;
     protected url: string = "";
-    public taskMap: Map<number, Promise<Response>> = new Map();
+    public taskMap: Map<number, CancelablePromise<Response>> = new Map();
     static sessionDB = new ManageDatabase();
     public filePool: {index: number, file: Blob}[] = [];
-    public fetching = async (start: number = 0, end: number = start + Base.MAX_FILE_SIZE) => {
-        
+    private transaction = async (start: number, end: number, id: number) => {
+        //查询file事务
         if(Base.sessionDB.available) {
             // indexedDB可用
             const result = await Base.sessionDB.read({url: this.url, start, end});
-
+            if(!this.taskMap.has(id)) throw Error("db read cancelled");
             if(result) {
+
                 return result;
             }
         }
         
 
         const response = await get(this.url, start, end, Base.MAX_FILE_SIZE);
+        if(!this.taskMap.has(id)) throw Error("file http get cancelled");
+        try{
+            await Base.sessionDB.add({url: this.url, start, end, data: response});
+            if(!this.taskMap.has(id)) throw Error("db add cancelled");
+        } catch(e) {
+            console.log(e)
+        }
         
-        await Base.sessionDB.add({url: this.url, start, end, data: response});
 
         return response;
+    }
+    public fetching = (start: number = 0, end: number = start + Base.MAX_FILE_SIZE): FetchingPromise => {
+        const id = taskId++;
+        const promise = cancelablePromise(this.transaction(start, end, id)) as FetchingPromise;
+        promise.id = id;
+
+        return promise;
+
     }
     public addFile = (index: number, file: Blob) => {
         if(this.filePool.length > 20) {
@@ -72,7 +92,7 @@ export class Partial {
         }
 
         // 查找是否有进行中的请求任务，有则等待返回
-        if(this.taskId && this.cacher.taskMap.get(this.taskId)) {
+        if(this.taskId && this.cacher.taskMap.has(this.taskId)) {
             const {file} = await this.cacher.taskMap.get(this.taskId)!
             this.cacher.addFile(this.index, file)
             return file;
@@ -80,7 +100,7 @@ export class Partial {
 
         // 开始新的请求
         const promise = this.cacher.fetching(this.rangeStart, this.rangeEnd);
-        this.taskId = taskId++;
+        this.taskId = promise.id;
         this.cacher.taskMap.set(this.taskId, promise);
         const {file} = await promise;
         this.cacher.taskMap.delete(this.taskId);
@@ -108,7 +128,12 @@ export default class FileCache extends Base{
             //初始化数据
             this.url = src;
 
-            const response = await this.fetching(0, 0);
+            const promise = this.fetching(0, 0);
+            const id = promise.id;
+            this.taskMap.set(id, promise);
+            const response = await promise;
+            this.taskMap.delete(id);
+
             //更新file大小
             const match = /\/(?=([0-9]+))/.exec(response.contentRange || "");
             if(match && match[1]) {
@@ -149,7 +174,9 @@ export default class FileCache extends Base{
    
     cancelCaching = async () => {
         for(let [id, task] of this.taskMap.entries()) {
-            // task.cancel();
+            console.log("cancel tasks",task)
+            task.cancel();
+            this.taskMap.delete(id);
         }
     }
     slice = async (start: number, end: number) => {

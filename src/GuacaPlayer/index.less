@@ -1,16 +1,42 @@
 @import "./fonts/iconfont.less";
 
+
+@keyframes rotating {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
 .guaca-player{
-    display: flex;
-    flex-direction: column;
+    display: block;
     height: 100%;
-    justify-content: space-between;
     position: relative;
     width: 100%;
+    overflow: hidden;
+    .guaca-pausing{
+        position: absolute;
+        z-index: 7;
+        width: 100%;
+        top: 0;
+        bottom: 40px;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        background-color: fade(#000, 40%);
+        .iconfont{
+            font-size: 34px;
+            margin-bottom: 20px;
+        }
+    }
     .guaca-player-display{
         width: 100%;
-        flex-grow: 1;
-        flex-shrink: 1;
+        height: calc(~"100% - 40px");
         display: flex;
         justify-content: center;
         align-items: center;
@@ -24,11 +50,13 @@
         background-color: #000;
         flex-grow: 0;
         flex-shrink: 0;
+        width: 100%;
         .guaca-player-control-range-wrapper{
             height: 6px;
             background-color: lighten(#000, 50%);
             position: relative;
             z-index: 8;
+            width: 100%;
             input[type=range] {
                 appearance: none;
                 display: block;
@@ -81,6 +109,31 @@
             }
         }
         
+    }
+    .guaca-player-message{
+        display: none;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        z-index: 10;
+        color: #fff;
+        .guaca-player-message-wrapper{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            .guaca-player-message-icon{
+                margin-right: 10px;
+                .iconfont{
+                    font-size: 20px;
+
+                }
+                .guaca-spin {
+                    animation: rotating .8s linear infinite;
+                }
+            }
+        }
     }
     .guaca-player-progress{
         color: #fff;
@@ -139,7 +192,7 @@
             }
             .guaca-player-progress-indicator-left, .guaca-player-progress-indicator-right{
                border-color: #03a9f4;
-               clip: rect(0 ,55, 110, 0);
+               clip: rect(0px ,55px, 110px, 0px);
             }
             .guaca-player-progress-text{
                 position: absolute;
@@ -149,14 +202,14 @@
                 position: absolute;
                 width: 100%;
                 height: 100%;
-                clip: rect(0 ,110, 110, 55);
+                clip: rect(0px ,110px, 110px, 55px);
             }
             .guaca-clip-left{
-                clip: rect(0 ,55, 110, 0);
+                clip: rect(0px ,55px, 110px, 0px);
 
             }
             .guaca-clip-right{
-                clip: rect(0 ,110, 110, 55);
+                clip: rect(0px ,110px, 110px, 55px);
 
             }
             .guaca-clip-auto{
@@ -166,3 +219,5 @@
         }
     }
 }
+
+

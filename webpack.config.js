@@ -5,13 +5,17 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = {
+
+const isDev = process.env.NODE_ENV === "development";
+
+const configs = {
     entry: {
         "index": "./src/index.tsx",
         "player": "./src/GuacaPlayer/index.tsx",
         "service-worker": "./src/GuacaPlayer/worker/service-worker.ts",
     },
     target: 'web',
+    mode: isDev?"development":"production",
     module: {
         rules: [{
             test: /\.tsx?$/,
@@ -57,18 +61,14 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin(),
-        new BundleAnalyzerPlugin({
-            analyzerMode: 'disabled',
-            generateStatsFile: true,
-            statsOptions: { source: false }
-        }),
         new HtmlWebpackPlugin({
             contentBase: path.resolve(__dirname, 'dist'),
             template: path.resolve(__dirname, 'src', 'index.html'),
             filename: 'index.html',
             hash: true, // 防止缓存
-            isDev: true,
-            inject: "body"
+            isDev,
+            inject: "body",
+            chunks: ["index"]
         }),
     ],
     devServer: {
@@ -88,6 +88,14 @@ module.exports = {
             assets: false,
             modules: false,
         },
+        proxy: {
+            "/console": {
+                "target": "https://172.16.20.72/",
+                "changeOrigin": true,
+                "secure": false,
+                "pathRewrite": { "^/" : "" }
+            },
+        }
     },
    
     devtool: 'source-map',
@@ -98,24 +106,34 @@ module.exports = {
         globalObject: 'self',
         filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
-        publicPath: '/',
+        publicPath: isDev?'/':'/cloudit/consoleplayer',
         library: 'GuacaPlayer',
         libraryTarget: 'umd'
 
     },
-    externals: {      
-        // Don't bundle react or react-dom      
-        react: {          
-            commonjs: "react",          
-            commonjs2: "react",          
-            amd: "React",          
-            root: "React"      
-        },      
-        "react-dom": {          
-            commonjs: "react-dom",          
-            commonjs2: "react-dom",          
-            amd: "ReactDOM",          
-            root: "ReactDOM"      
-        }  
-    } 
+    // externals: {      
+    //     // Don't bundle react or react-dom      
+    //     react: {          
+    //         commonjs: "react",          
+    //         commonjs2: "react",          
+    //         amd: "React",          
+    //         root: "React"      
+    //     },      
+    //     "react-dom": {          
+    //         commonjs: "react-dom",          
+    //         commonjs2: "react-dom",          
+    //         amd: "ReactDOM",          
+    //         root: "ReactDOM"      
+    //     }  
+    // } 
 };
+
+if(!isDev) {
+    configs.plugins.push(new BundleAnalyzerPlugin({
+        analyzerMode: 'disabled',
+        generateStatsFile: true,
+        statsOptions: { source: false }
+    }))
+}
+
+module.exports = configs

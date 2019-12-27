@@ -3,6 +3,7 @@
 */
 import React, { useState, useEffect, useRef, ChangeEvent, useCallback, MouseEvent, useMemo } from 'react';
 import {formatTime, debounce} from './utils/index';
+import usePrevious from './hooks/usePrevious';
 
 interface Props {
     currentDuration: number | null;
@@ -18,6 +19,9 @@ const Control: React.FC<Props> = ({ currentDuration, duration, playbackPosition,
 
     const [mouseDown, setMouseDown] = useState(false);
     const [inputValue, setInputValue] = useState(playbackPosition);
+
+    const preMouseDown = usePrevious(mouseDown);
+
     //防抖
     const deb = useMemo(()=>{
         return debounce(0)
@@ -46,17 +50,23 @@ const Control: React.FC<Props> = ({ currentDuration, duration, playbackPosition,
 
     useEffect(()=>{
         //如果播放位置没有发生变动则不触发事件
-        if(inputValue === playbackPosition) return;
+        if(inputValue === playbackPosition && preMouseDown === mouseDown) return;
         onChange && deb(onChange.bind(undefined, {
             mouseDown,
             inputValue
         }))
-    }, [inputValue, mouseDown])
+
+        return () => {
+            console.log("cancel deb")
+            deb.cancel()
+        }
+    }, [inputValue, mouseDown, onChange])
 
     return (
         <div className={"guaca-player-control"}>
             <div className={"guaca-player-control-range-wrapper"}>
                 <input 
+                    className={"guaca-player-range-input"}
                     type="range" 
                     min={0}
                     max={currentDuration || 0}

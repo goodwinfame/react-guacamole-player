@@ -6,10 +6,10 @@
 		"author": "Goodwin",
 		"license": "MIT",
 		"scripts": {
-				"start": "cross-env webpack-dev-server --mode=development --config=webpack.config.js",
+				"start": "cross-env NODE_ENV=development webpack-dev-server",
 				"eslint": "eslint ./src --ext .ts",
-				"build": "webpack --mode=production",
-				"build:dev": "webpack --mode=development",
+				"build": "cross-env NODE_ENV=production webpack",
+				"build:dev": "cross-env NODE_ENV=development webpack",
 				"analyz": "yarn run build && webpack-bundle-analyzer --port 8123 dist/stats.json"
 		},
 		"peerDependencies": {      
@@ -36,6 +36,7 @@
 				"less": "^3.0.4",
 				"less-loader": "^4.1.0",
 				"postcss-loader": "^3.0.0",
+				"serviceworker-webpack-plugin": "^1.0.1",
 				"style-loader": "^1.0.0",
 				"ts-loader": "^5.3.3",
 				"typescript": "^3.7.3",
