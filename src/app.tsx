@@ -1,4 +1,4 @@
-import React, { useState, useRef, ReactNode, useEffect } from 'react';
+import React, { useState } from 'react';
 import GuacaPlayer from './GuacaPlayer'
 
 const App: React.FC = () => {

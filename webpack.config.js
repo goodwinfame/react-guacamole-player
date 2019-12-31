@@ -119,10 +119,6 @@ if(!isDev) {
         //     generateStatsFile: true,
         //     statsOptions: { source: false }
         // }),
-        new CopyWebpackPlugin([{
-            from: path.resolve(__dirname, 'package.json'),
-            to: path.resolve(__dirname, 'dist')
-        }])
     )
 
     configs.externals = {      

@@ -1,8 +1,8 @@
 {
 		"name": "react-guacamole-player",
-		"version": "1.0.0",
+		"version": "1.0.1",
 		"description": "A guacamole session player for react",
-		"main": "player.js",
+		"main": "dist/player.js",
 		"author": "Goodwin",
 		"license": "MIT",
 		"scripts": {
