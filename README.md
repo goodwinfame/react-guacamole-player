@@ -2,8 +2,7 @@
 
 [![npm Version](https://img.shields.io/badge/npm-v1.0.1-blue)](https://www.npmjs.org/package/react-guacamole-player)
 
-This reusable React component that can play guacamole session logs.
-The player uses guacamole-common-js as it's readering core.
+This reusable React component that can play guacamole session logs uses guacamole-common-js as it's readering core.
 
 
 ## Install
