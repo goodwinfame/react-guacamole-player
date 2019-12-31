@@ -39,7 +39,7 @@ const Display: React.FC<Props> = ({ display, isPlaying, onClick, playerState, pr
 
         // 根据容器大小缩放视频
         display.scale(Math.min(target.offsetWidth / displayWidth,
-            target.offsetHeight - 40 / displayHeight));
+            (target.offsetHeight - 40) / displayHeight));
 
     }, [display, el])
 

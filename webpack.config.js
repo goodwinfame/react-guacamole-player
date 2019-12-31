@@ -4,16 +4,13 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 
 const isDev = process.env.NODE_ENV === "development";
 
 const configs = {
-    entry: {
-        "index": "./src/index.tsx",
-        "player": "./src/GuacaPlayer/index.tsx",
-        "service-worker": "./src/GuacaPlayer/worker/service-worker.ts",
-    },
+    
     target: 'web',
     mode: isDev?"development":"production",
     module: {
@@ -61,15 +58,7 @@ const configs = {
     },
     plugins: [
         new CleanWebpackPlugin(),
-        new HtmlWebpackPlugin({
-            contentBase: path.resolve(__dirname, 'dist'),
-            template: path.resolve(__dirname, 'src', 'index.html'),
-            filename: 'index.html',
-            hash: true, // 防止缓存
-            isDev,
-            inject: "body",
-            chunks: ["index"]
-        }),
+        
     ],
     devServer: {
         contentBase: path.resolve(__dirname, 'dist'),
@@ -98,7 +87,6 @@ const configs = {
         }
     },
    
-    devtool: 'source-map',
     resolve: {
         extensions: [".ts", ".js", ".tsx"],
     },
@@ -111,29 +99,62 @@ const configs = {
         libraryTarget: 'umd'
 
     },
-    // externals: {      
-    //     // Don't bundle react or react-dom      
-    //     react: {          
-    //         commonjs: "react",          
-    //         commonjs2: "react",          
-    //         amd: "React",          
-    //         root: "React"      
-    //     },      
-    //     "react-dom": {          
-    //         commonjs: "react-dom",          
-    //         commonjs2: "react-dom",          
-    //         amd: "ReactDOM",          
-    //         root: "ReactDOM"      
-    //     }  
-    // } 
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin({
+            include: /\.min\.js$/
+        })]
+    }
 };
 
 if(!isDev) {
-    configs.plugins.push(new BundleAnalyzerPlugin({
-        analyzerMode: 'disabled',
-        generateStatsFile: true,
-        statsOptions: { source: false }
-    }))
+    configs.entry = {
+        "player": "./src/GuacaPlayer/index.tsx",
+        "player.min": "./src/GuacaPlayer/index.tsx",
+    }
+
+    configs.plugins.push(
+        // new BundleAnalyzerPlugin({
+        //     analyzerMode: 'disabled',
+        //     generateStatsFile: true,
+        //     statsOptions: { source: false }
+        // }),
+        new CopyWebpackPlugin([{
+            from: path.resolve(__dirname, 'package.json'),
+            to: path.resolve(__dirname, 'dist')
+        }])
+    )
+
+    configs.externals = {      
+        react: {          
+            commonjs: "react",          
+            commonjs2: "react",          
+            amd: "React",          
+            root: "React"      
+        },      
+        "react-dom": {          
+            commonjs: "react-dom",          
+            commonjs2: "react-dom",          
+            amd: "ReactDOM",          
+            root: "ReactDOM"      
+        }  
+    }
+} else {
+    configs.entry = {
+        "index": "./src/index.tsx",
+    }
+
+    configs.plugins.push(
+        new HtmlWebpackPlugin({
+            contentBase: path.resolve(__dirname, 'dist'),
+            template: path.resolve(__dirname, 'src', 'index.html'),
+            filename: 'index.html',
+            hash: true,
+            isDev,
+            inject: "body",
+            chunks: ["index"]
+        })
+    )
 }
 
 module.exports = configs

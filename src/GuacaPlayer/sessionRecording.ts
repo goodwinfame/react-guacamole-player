@@ -420,10 +420,10 @@ export default class SessionRecording {
             if (startIndex === this.currentFrame)
                 break;
 
-            // 如果该帧有状态，则将目标帧设置为当前帧
+            // 如果该帧有状态，则将该帧设置为当前帧
             if (frame.clientState) {
                 this.playbackClient.importState(frame.clientState);
-                this.currentFrame = index;
+                this.currentFrame = startIndex - 1;
                 break;
             }
 
