@@ -1,13 +1,14 @@
 # react-guacamole-player
 
 [![npm Version](https://img.shields.io/badge/npm-v1.0.1-blue)](https://www.npmjs.org/package/react-guacamole-player)
+[![Dependencies](https://img.shields.io/badge/react-^16.8-red)](https://www.npmjs.org/package/react-guacamole-player)
 
-This reusable React component that can play guacamole session logs uses guacamole-common-js as it's rendering core.
+This reusable React component that can play guacamole session recordings uses guacamole-common-js as it's rendering core.
 
 
 ## Requirement
-- The player build based on React Hooks. It requires the React version >= 16.8.
-- The server side which provides session logs need to support Range-Content header.
+- The player is built based on React Hooks. It requires the React version >= 16.8.
+- The server side which provides session recordings needs to support Range-Content header.
 
 ## Install
 ```
