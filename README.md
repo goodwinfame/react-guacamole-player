@@ -22,7 +22,7 @@ npm i -S react-guacamole-player
 ## Example
 ```javascript
 import React, { useState } from 'react';
-import GuacaPlayer from 'GuacaPlayer'
+import GuacaPlayer from 'react-guacamole-player'
 
 
 /**
@@ -42,7 +42,7 @@ const App: React.FC = () => {
 ## Controlled Player Size
 ```javascript
 import React, { useState } from 'react';
-import GuacaPlayer from 'GuacaPlayer'
+import GuacaPlayer from 'react-guacamole-player'
 
 const App: React.FC = () => {
     const [src, setSrc] = useState("");
@@ -58,7 +58,7 @@ const App: React.FC = () => {
 ## Disable Autoplay
 ```javascript
 import React, { useState } from 'react';
-import GuacaPlayer from 'GuacaPlayer'
+import GuacaPlayer from 'react-guacamole-player'
 
 
 /**
@@ -79,7 +79,7 @@ const App: React.FC = () => {
 ## Outside Control
 ```javascript
 import React, { useState, useCallback } from 'react';
-import GuacaPlayer from 'GuacaPlayer'
+import GuacaPlayer from 'react-guacamole-player'
 
 
 /**
@@ -118,7 +118,7 @@ const App: React.FC = () => {
 ## Internationalization
 ```javascript
 import React, { useState, useCallback } from 'react';
-import GuacaPlayer from 'GuacaPlayer'
+import GuacaPlayer from 'react-guacamole-player'
 
 
 /**
