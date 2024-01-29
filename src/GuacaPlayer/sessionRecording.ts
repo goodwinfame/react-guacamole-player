@@ -113,9 +113,11 @@ export default class SessionRecording {
     }
     getLastTimestamp = async () => {
         //获取视频最后一帧时间戳
-        if(this.endVideoTimestamp || !this.fileCache.tail) {
+        if (this.endVideoTimestamp) {
             return this.endVideoTimestamp;
         }
+        this.endVideoTimestamp = this.frames[this.frames.length - 1]?.timestamp
+        /*
         const file = await this.fileCache.tail.getFile();
         const string = await new Promise<String>((resolve, reject) => {
             const reader = new FileReader();
@@ -131,6 +133,7 @@ export default class SessionRecording {
 
         const lastSync = string.lastIndexOf("sync");
         this.endVideoTimestamp = Number(string.slice(lastSync + 8, lastSync + 21));
+        */
         return this.endVideoTimestamp;
     }
     loadFile = async (partial: Partial | null) => {
